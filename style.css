@@ -124,5 +124,3 @@ td input{width:100%;min-width:150px;border-color:transparent;background:transpar
 @media(max-width:700px){.hm{display:none}}
 @media(max-width:560px){main{padding:18px 10px}.hd{padding:16px 10px 0}.hanko{width:44px;height:44px;font-size:25px}.jp{letter-spacing:.25em}.dz{padding:18px}.ck,.card{padding:16px}.ck>header{flex-wrap:wrap}.gh .bt{margin-left:0}.sumry{padding:18px 14px}.tabs button{padding:11px 14px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
-
-select{font:inherit;font-weight:700;color:var(--ink);background:var(--pp);border:1px solid var(--bd);border-radius:4px;padding:9px 12px}
