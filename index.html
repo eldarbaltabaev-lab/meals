@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Проверка отчётов по питанию</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&family=Noto+Serif:wght@600;700&family=Shippori+Mincho:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head><body>
+<div id="pg" aria-hidden="true"></div><canvas id="sk" aria-hidden="true"></canvas>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rough"><feTurbulence type="fractalNoise" baseFrequency=".045" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3.2"/></filter></svg>
+<header class="hd">
+  <div class="sky" aria-hidden="true"><i class="sun"></i><i class="mist"></i>
+    <svg class="fj" viewBox="0 0 1200 150" preserveAspectRatio="xMidYMax slice"><path class="m1" d="M0 150V100Q120 66 240 96T470 86Q560 70 600 96T820 80Q950 56 1060 92T1200 86V150Z"/><path class="fu" d="M300 150C420 132 520 72 572 38Q600 22 628 38C680 72 780 132 900 150Z"/><path class="sn" d="M572 38Q600 22 628 38C640 46 650 54 658 62L640 55L626 68L610 53L594 68L578 55L562 62C552 54 562 46 572 38Z"/><path class="m2" d="M0 150V126Q150 104 300 124T600 121T900 119T1200 123V150Z"/></svg>
+    <i class="lt" style="left:56%"></i><i class="lt l2" style="left:63%"></i>
+    <div class="wv w2"></div><div class="wv"></div></div>
+  <span class="tate" lang="ja" aria-hidden="true">食事日報</span>
+  <div class="hd-in">
+    <div class="brand"><span class="hanko" aria-hidden="true">食</span>
+      <div><h1>Проверка отчётов по питанию</h1><p class="jp" lang="ja">食事日報チェック</p></div></div>
+    <button class="bt ghost" data-a="th" title="Сменить тему: день или ночь" aria-label="Сменить тему">◐</button>
+  </div>
+  <nav class="tabs" id="tabs" aria-label="Разделы"><button data-t="c" class="on"><span class="k" lang="ja">検</span>Проверка</button><button data-t="r"><span class="k" lang="ja">帳</span>Справочник</button></nav>
+</header>
+<main>
+<div id="msg" role="status"></div>
+
+<section id="p-c">
+<div class="dz" id="dz">
+  <svg class="torii" viewBox="0 0 64 48" width="58" height="44" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11c15 5 43 5 58 0"/><path d="M9 19h46"/><path d="M16 11v33M48 11v33"/><path d="M27 19v7M37 19v7"/></svg>
+  <div class="dz-t">
+    <h2>Перетащите файлы Record и Report</h2>
+    <p>Meals Sheet Record и Meals report by company. Тип файла определяется сам, проверка запускается сразу.</p>
+    <p class="mu">Файлы читаются в браузере и никуда не отправляются. Новый файл того же типа заменяет прежний.</p>
+  </div>
+  <div class="dz-b"><button class="bt pr" data-a="pick">Выбрать файлы</button><button class="bt" data-a="cf">Очистить загруженное</button></div>
+  <input type="file" id="fi" multiple accept=".xlsx,.xls" class="hid">
+</div>
+<div id="res"></div>
+</section>
+
+<section id="p-r" class="hid">
+<div class="card"><h2>Импорт из Excel</h2>
+<p class="mu">Создайте файл Excel: в первом столбце компании, во втором их кост-коды. Первая строка может быть заголовком. Перед добавлением вы увидите, что именно изменится.</p>
+<div class="bar"><button class="bt pr" data-a="ipick">Выбрать файл Excel</button><button class="bt" data-a="tpl">Скачать пример файла</button><button class="bt" data-a="xp">Выгрузить текущий справочник</button><input type="file" id="fx" accept=".xlsx,.xls,.csv" class="hid"></div></div>
+<div id="imp"></div>
+<div class="card"><h2>Добавить компанию или кост-код</h2>
+<div class="bar"><input type="text" id="no" placeholder="Компания (точное написание)" aria-label="Компания"><input type="text" id="nc" placeholder="Кост-код" aria-label="Кост-код"><button class="bt pr" data-a="add">Добавить</button></div></div>
+<div class="bar"><input type="search" id="q" placeholder="Поиск по справочнику" aria-label="Поиск"><span class="mu" id="rc"></span></div>
+<div class="card sc" id="ref"></div>
+<div class="card"><h2>Копия справочника</h2><p class="mu">Справочник хранится в этом браузере. Скачайте копию, чтобы перенести его на другой компьютер или не потерять.</p>
+<div class="bar"><button class="bt" data-a="bk">Скачать копию</button><button class="bt" data-a="rs">Восстановить из копии</button><button class="bt" data-a="rr">Сбросить к исходному</button><input type="file" id="fr" accept=".json" class="hid"></div></div>
+</section>
+</main>
+<footer class="ft"><b aria-hidden="true">終</b>食事日報チェック</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="app.js"></script>
+<script src="fx.js"></script>
+</body></html>
