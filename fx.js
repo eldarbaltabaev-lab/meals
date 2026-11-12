@@ -10,6 +10,9 @@ d.addEventListener('pointerout',e=>{const t=e.target.closest&&e.target.closest('
 d.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.closest('.bt,.tabs button');
  if(b&&!rm){const r=b.getBoundingClientRect(),s=d.createElement('span');s.className='rp';s.style.left=e.clientX-r.left+'px';s.style.top=e.clientY-r.top+'px';b.appendChild(s);setTimeout(()=>s.remove(),700)}
  if(!rm)for(let i=0;i<14;i++)mk(e.clientX,e.clientY,1)});
+/* счёт итогов */
+const cu=()=>d.querySelectorAll('.sb b[data-n]').forEach(e=>{const v=+e.dataset.n;if(rm||!v||e.dataset.d)return;e.dataset.d=1;const t0=performance.now();(function s(t){const k=Math.min(1,(t-t0)/1100);e.textContent=Math.round(v*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(s)})(t0)});
+new MutationObserver(cu).observe($('#res'),{childList:true});
 if(rm)return;
 const c=$('#sk'),g=c.getContext('2d'),rs=()=>{W=c.width=innerWidth;H=c.height=innerHeight};rs();addEventListener('resize',rs);
 function mk(x,y,k){P.push({x,y,k,s:k?3+Math.random()*4:5+Math.random()*6,vx:k===1?(Math.random()-.5)*7:(Math.random()-.5)*1.5,vy:k===1?-Math.random()*5:k===2?-Math.random()*.6:.5+Math.random()*1,r:Math.random()*6.3,vr:(Math.random()-.5)*.08,ph:Math.random()*6.3,l:1,a:.55+Math.random()*.4,c:Math.random()>.5?'#F7A9BF':'#FFD0DC'})}

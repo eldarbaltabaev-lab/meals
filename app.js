@@ -69,7 +69,7 @@ async function parse(f){
   const tk=[],ts=rep&&wb.SheetNames.find(n=>/take ?away/i.test(n));
   if(ts)for(const r of sh(ts)){const n=String(r[0]??'').trim();if(n&&!/name|имя/i.test(n))tk.push({nm:n,o:String(r[1]??'')})}
   const tb=`<div class="sc"><table><tr><th></th>${act.map(([,n])=>`<th class="n">${n}</th>`).join('')}</tr>${[['Σ людей',SP],['Σ Total компаний',SC],['Grand Total в файле',GT]].filter(x=>x[1]).map(([l,O])=>`<tr><td>${l}</td>${act.map(([k])=>`<td class="n ${GT&&O[k]!==GT[k]?'er':''}">${O[k]}</td>`).join('')}</tr>`).join('')}</table></div>`;
-  return{kind:rep?'P':'R',name:f.name,persons,tk,iss,tb,dates:[...dates].sort()}
+  return{kind:rep?'P':'R',name:f.name,persons,tk,iss,tb,dates:[...dates].sort(),gt:GT||SP,hasGT:!!GT,act}
 }
 async function load(files){
   if(!ready)return msg('Хранилище ещё не готово','er');const er=[];
@@ -117,7 +117,16 @@ function render(){
   cards.push(['ck4',ni?'er':'ok','Итоги внутри файлов','Люди = Total компаний = Grand Total',ni,'расх.',
     fs.map(x=>`<div class="sub">${tag(x.kind)} ${x.iss.length?`<span class="er">расхождений: ${x.iss.length}</span><div class="why">${x.iss.map(esc).join('<br>')}</div>${x.tb}`:'<span class="ok">всё сходится</span>'}</div>`).join(''),'Итоги файлов']);
   const tl=cards.map((c,i)=>`<button class="tile ${c[1]}" data-go="${c[0]}" style="--d:${i*170}ms"><span class="seal">${SEALS[c[1]]}</span><span class="tt">${c[7]}</span><span class="tn">${c[1]==='ok'?'без замечаний':c[4]+' '+c[5]}</span></button>`).join('');
-  $('#res').innerHTML=h+`<div class="tiles">${tl}</div>`+cards.map(c=>ck(c[0],c[1],c[2],c[3],c[4],c[5],c[6])).join('')
+  /* ---------- итоги: Grand Total Record / Report / всего ---------- */
+  const tot=o=>o.n||F.reduce((a,k)=>a+o[k],0),AK=new Set();fs.forEach(x=>x.act.forEach(([k])=>AK.add(k)));
+  const cl=COLS.filter(([k])=>AK.has(k)&&k!=='n'),gv=(x,k)=>x?x.gt[k]:0,
+    T={R:R?tot(R.gt):null,P:P?tot(P.gt):null},TT=(T.R||0)+(T.P||0),big=(l,j,v,c)=>`<div class="sb ${c||''}"><span>${l}</span><b data-n="${v==null?'':v}">${v==null?'—':v}</b><i lang="ja">${j}</i></div>`,
+    row=(l,x,c)=>`<tr class="${c||''}"><td>${l}</td>${cl.map(([k])=>`<td class="n">${x?x(k):'—'}</td>`).join('')}<td class="n"><b>${c==='tt'?TT:(c==='r'?T.R:T.P)??'—'}</b></td></tr>`;
+  const sumry=`<section class="sumry" id="sum"><header><h2>Итоги <span lang="ja">総括</span></h2><p>Grand Total из файлов: Record, Report и сумма обоих</p></header>
+    <div class="sbs">${big('Record','記録',T.R,'r')}<span class="pl">＋</span>${big('Report','報告',T.P,'p')}<span class="pl">＝</span>${big('Всего','合計',TT,'tt')}</div>
+    <div class="sc"><table><tr><th></th>${cl.map(([,n])=>`<th class="n">${n}</th>`).join('')}<th class="n">Всего приёмов</th></tr>${row('Record',R&&(k=>gv(R,k)),'r')}${row('Report',P&&(k=>gv(P,k)),'p')}${row('Всего',k=>gv(R,k)+gv(P,k),'tt')}</table></div>
+    ${fs.filter(x=>!x.hasGT).map(x=>`<div class="note wr">В ${LBL[x.kind]} нет строки Grand Total, взята сумма по людям</div>`).join('')}${!R||!P?`<div class="note">Загружен только ${R?'Record':'Report'}: «Всего» равно его итогу</div>`:''}</section>`;
+  $('#res').innerHTML=h+`<div class="tiles">${tl}</div>`+cards.map(c=>ck(c[0],c[1],c[2],c[3],c[4],c[5],c[6])).join('')+sumry
 }
 
 /* ---------- копия / сброс справочника ---------- */
