@@ -16,17 +16,18 @@ const IDB={db:null,
  set(k,v){return new Promise((ok,no)=>{const t=this.db.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=ok;t.onerror=()=>no(t.error)})},
  del(k){return new Promise((ok,no)=>{const t=this.db.transaction('kv','readwrite');t.objectStore('kv').delete(k);t.oncomplete=ok;t.onerror=()=>no(t.error)})}};
 /* Хранилище сводной. Сюда подключается Firebase: достаточно заменить load/save */
-const DB={async load(){return(await IDB.all()).days||{}},async save(days){const cur=await this.load();Object.assign(cur,days);await IDB.set('days',cur);return cur}};
+const DB={async save(days){if(!window.FB||!FB.user)throw new Error('нужно войти в систему');await FB.saveDays(days);return{...SUM,...days}}};
+window.onFB=(days,dis)=>{SUM=days;if(dis)DIS=new Set(dis);render()};
 const reidx=()=>{rk=new Set(ref.map(x=>kk(x.o,x.c)));RO=new Map();RC=new Map();
   ref.forEach(x=>{(RO.get(x.o)||RO.set(x.o,[]).get(x.o)).push(x.c);(RC.get(x.c)||RC.set(x.c,[]).get(x.c)).push(x.o)})};
-const saveDis=async()=>{try{await IDB.set('dis',{list:[...DIS]});render()}catch(e){msg('Не сохранилось: '+(e.message||e),'er')}};
+const saveDis=async()=>{try{await IDB.set('dis',{list:[...DIS]});if(window.FB&&FB.user)await FB.saveDis([...DIS]);render()}catch(e){msg('Не сохранилось: '+(e.message||e),'er')}};
 const saveRef=async()=>{try{await IDB.set('ref',{list:ref});reidx();render()}catch(e){msg('Не сохранилось: '+(e.message||e),'er')}};
 async function init(){
   try{await IDB.open();const o=await IDB.all();
     for(const k in o)if(/^d_|^kaz$/.test(k))await IDB.del(k);
     if(o.ref)ref=o.ref.list||[];else{ref=SEED.map(x=>({...x}));await IDB.set('ref',{list:ref})}
     if(!o.meta){if(o.ref&&!ref.some(x=>x.o===KAZN)){ref.push(...KAZ0.map(c=>({o:KAZN,c})));await IDB.set('ref',{list:ref})}await IDB.set('meta',{kaz:1})}
-    if(o.dis)DIS=new Set(o.dis.list||[]);SUM=o.days||{};
+    if(o.dis)DIS=new Set(o.dis.list||[]);
     reidx();ready=true;render()
   }catch(e){msg('Не удалось открыть хранилище браузера: '+(e.message||e),'er')}
 }
