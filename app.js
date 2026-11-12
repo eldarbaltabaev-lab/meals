@@ -5,8 +5,8 @@ const KAZN='KAZ_Minerals_Aktogay',SEED=[...SEED0,...KAZ0.map(c=>({o:KAZN,c}))];
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const kk=(o,c)=>o+'\u0001'+c,nk=s=>String(s??'').toLowerCase().replace(/ё/g,'е').replace(/\s+/g,' ').trim();
 const F=['b','t','l','d','p','s'],COLS=[['b','завтрак'],['t','take away'],['l','обед'],['d','ужин'],['p','packed'],['s','стейк'],['n','Nb Meals']];
-let ref=[],rk=new Set(),RO=new Map(),RC=new Map(),FILES={R:null,P:null},ready=false,DIS=new Set(),SUM={},SM='';
-const CAMP='Permanent',KAL=o=>/^kaz[_ ]?minerals/i.test(String(o));
+let ref=[],rk=new Set(),RO=new Map(),RC=new Map(),FILES={R:null,P:null},ready=false,DIS=new Set(),SUMS={},SMS={},CUR=0;
+const CAMPS=[{id:'perm',name:'Permanent',col:'days'},{id:'turan',name:'Turan',col:'days_turan'}],KAL=o=>/^kaz[_ ]?minerals/i.test(String(o));
 const msg=(t,c)=>{$('#msg').className=c||'mu';$('#msg').textContent=t};
 
 /* ---------- хранилище справочника (IndexedDB) ---------- */
@@ -16,8 +16,8 @@ const IDB={db:null,
  set(k,v){return new Promise((ok,no)=>{const t=this.db.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=ok;t.onerror=()=>no(t.error)})},
  del(k){return new Promise((ok,no)=>{const t=this.db.transaction('kv','readwrite');t.objectStore('kv').delete(k);t.oncomplete=ok;t.onerror=()=>no(t.error)})}};
 /* Хранилище сводной. Сюда подключается Firebase: достаточно заменить load/save */
-const DB={async save(days){if(!window.FB||!FB.user)throw new Error('нужно войти в систему');await FB.saveDays(days);return{...SUM,...days}}};
-window.onFB=(days,dis)=>{SUM=days;if(dis)DIS=new Set(dis);render()};
+const DB={async save(i,days){const c=CAMPS[i];if(!window.FB||!FB.user)throw new Error('нужно войти в систему');await FB.saveDays(c.col,days);return{...(SUMS[c.id]||{}),...days}}};
+window.onFB=(days,dis)=>{SUMS=days||{};if(dis)DIS=new Set(dis);render()};
 const reidx=()=>{rk=new Set(ref.map(x=>kk(x.o,x.c)));RO=new Map();RC=new Map();
   ref.forEach(x=>{(RO.get(x.o)||RO.set(x.o,[]).get(x.o)).push(x.c);(RC.get(x.c)||RC.set(x.c,[]).get(x.c)).push(x.o)})};
 const saveDis=async()=>{try{await IDB.set('dis',{list:[...DIS]});if(window.FB&&FB.user)await FB.saveDis([...DIS]);render()}catch(e){msg('Не сохранилось: '+(e.message||e),'er')}};
@@ -92,7 +92,7 @@ function render(){
   $('#rc').textContent=`Записей: ${ref.length}`;
   const qq=nk($('#q').value),RL=ref.map((x,i)=>({...x,i})).filter(x=>!qq||nk(x.o+' '+x.c).includes(qq));
   $('#ref').innerHTML=`<table><tr><th>Компания</th><th>Кост-код</th><th></th></tr>${RL.map(x=>`<tr><td><input type="text" value="${esc(x.o)}" data-i="${x.i}" data-f="o" aria-label="Компания"></td><td><input type="text" value="${esc(x.c)}" data-i="${x.i}" data-f="c" aria-label="Кост-код"></td><td class="n"><button class="bt sm" data-a="del" data-i="${x.i}" aria-label="Удалить">✕</button></td></tr>`).join('')}</table>`;
-  renderSum();renderImp();
+  CAMPS.forEach((_,i)=>renderSum(i));renderImp();
   if(!fs.length){$('#res').innerHTML='';return}
   let h=`<div class="files">${fs.map(x=>`<div class="fc">${tag(x.kind)}<span class="fn">${esc(x.name)}</span><span class="fm">${x.dates.join(', ')||'дата не найдена'}</span><span class="fm">людей: <b>${x.persons.length}</b></span></div>`).join('')}</div>`;
   if(R&&P&&R.dates.join()!==P.dates.join())h+=`<div class="note wr">Даты в файлах разные: Record ${R.dates.join(', ')||'—'}, Report ${P.dates.join(', ')||'—'}</div>`;
@@ -137,7 +137,7 @@ function render(){
   const sumry=`<section class="sumry" id="sum"><header><h2>Итоги <span lang="ja">総括</span></h2><p>Grand Total из файлов: Record, Report и сумма обоих</p></header>
     <div class="sbs">${big('Record','記録',T.R,'r')}<span class="pl">＋</span>${big('Report','報告',T.P,'p')}<span class="pl">＝</span>${big('Всего','合計',TT,'tt')}</div>
     <div class="sc"><table><tr><th></th>${cl.map(([,n])=>`<th class="n">${n}</th>`).join('')}<th class="n">Всего приёмов</th></tr>${row('Record',R&&(k=>gv(R,k)),'r')}${row('Report',P&&(k=>gv(P,k)),'p')}${row('Всего',k=>gv(R,k)+gv(P,k),'tt')}</table></div>
-    ${OKS.length?`<div class="bar"><button class="bt pr" data-a="sv" ${why?'disabled':''}>保存 Сохранить в сводную (${OKS[0]})</button><span class="${why?'wr':'ok'}">${why||'Всё чисто, можно сохранять'}</span></div>`:''}${fs.filter(x=>!x.hasGT).map(x=>`<div class="note wr">В ${LBL[x.kind]} нет строки Grand Total, взята сумма по людям</div>`).join('')}${!R||!P?`<div class="note">Загружен только ${R?'Record':'Report'}: «Всего» равно его итогу</div>`:''}</section>`;
+    ${OKS.length?`<div class="bar"><button class="bt pr" data-a="sv" ${why?'disabled':''}>保存 Сохранить в сводную ${CAMPS[CUR].name} (${OKS[0]})</button><span class="${why?'wr':'ok'}">${why||'Всё чисто, можно сохранять'}</span></div>`:''}${fs.filter(x=>!x.hasGT).map(x=>`<div class="note wr">В ${LBL[x.kind]} нет строки Grand Total, взята сумма по людям</div>`).join('')}${!R||!P?`<div class="note">Загружен только ${R?'Record':'Report'}: «Всего» равно его итогу</div>`:''}</section>`;
   $('#res').innerHTML=h+`<div class="tiles">${tl}</div>`+cards.map(c=>ck(c[0],c[1],c[2],c[3],c[4],c[5],c[6])).join('')+sumry
 }
 
@@ -177,14 +177,14 @@ function renderImp(){
 function xlsDl(name,rows){const wb=XLSX.utils.book_new(),ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:60},{wch:24}];XLSX.utils.book_append_sheet(wb,ws,'Calculator');XLSX.writeFile(wb,name)}
 
 /* ---------- сводная (как Excel: Contractors / KAL / KAL + Contractors) ---------- */
-function renderSum(){const el=$('#sumpg');if(!el)return;const ds=Object.keys(SUM).sort();
+function renderSum(i0){const c=CAMPS[i0],el=$('#sumpg'+i0);if(!el)return;const SUM=SUMS[c.id]||{},ds=Object.keys(SUM).sort();
   if(!ds.length){el.innerHTML='<div class="note">Пока нет данных. Загрузи отчёты на вкладке «Проверка» и нажми «Сохранить в сводную».</div>';return}
-  if(!SM)SM=ds[ds.length-1].slice(0,7);$('#sm').value=SM;
+  if(!SMS[c.id])SMS[c.id]=ds[ds.length-1].slice(0,7);const SM=SMS[c.id];$('#sm'+i0).value=SM;
   const [Y,M]=SM.split('-').map(Number),nd=new Date(Y,M,0).getDate(),mn=new Date(Y,M-1,1).toLocaleString('en',{month:'long'}),
   RW=[['b','Breakfast/Завтрак'],['t','TAKEAWAY'],['l','Lunch/Обед'],['d','Dinner/Ужин'],['p','Packed meals']],
   key=i=>`${SM}-${String(i).padStart(2,'0')}`,sun=i=>new Date(Y,M-1,i).getDay()===0,I=[...Array(nd)].map((_,i)=>i+1),
   blk=(ttl,get,cls)=>{const G=I.map(i=>get(key(i))),tot=g=>g?RW.reduce((a,[k])=>a+g[k],0):null;
-   return`<section class="pvb ${cls}"><h3>${ttl} ${mn} ${Y} ${CAMP}</h3><div class="sc"><table class="pv"><tr class="dh"><th>Date</th>${I.map(i=>`<th class="${sun(i)?'su':''}">${i}</th>`).join('')}<th class="n">Σ</th></tr>
+   return`<section class="pvb ${cls}"><h3>${ttl} ${mn} ${Y} ${c.name}</h3><div class="sc"><table class="pv"><tr class="dh"><th>Date</th>${I.map(i=>`<th class="${sun(i)?'su':''}">${i}</th>`).join('')}<th class="n">Σ</th></tr>
    ${RW.map(([k,n])=>`<tr><th class="rl">${n}</th>${G.map((g,j)=>`<td class="${k==='d'&&sun(j+1)?'sd':''}">${g?g[k]:''}</td>`).join('')}<td class="n sm">${G.reduce((a,g)=>a+(g?g[k]:0),0)}</td></tr>`).join('')}
    <tr class="tr"><th class="rl">TOTAL</th>${G.map(g=>`<td>${g?tot(g):0}</td>`).join('')}<td class="n sm">${G.reduce((a,g)=>a+(g?tot(g):0),0)}</td></tr></table></div></section>`};
   el.innerHTML=blk('Contractors',d=>SUM[d]&&SUM[d].con,'c1')+blk('KAL',d=>SUM[d]&&SUM[d].kal,'c2')+blk('KAL + Contractors',d=>SUM[d]&&RW.reduce((o,[k])=>(o[k]=SUM[d].kal[k]+SUM[d].con[k],o),{}),'c3')}
@@ -192,7 +192,7 @@ function renderSum(){const el=$('#sumpg');if(!el)return;const ds=Object.keys(SUM
 /* ---------- события ---------- */
 document.addEventListener('click',e=>{const t=e.target.closest('[data-t],[data-a],[data-go]');if(!t)return;
   if(t.dataset.go){const el=document.getElementById(t.dataset.go);if(el)el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});return}
-  if(t.dataset.t){document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b===t));['c','r','s'].forEach(x=>$('#p-'+x).classList.toggle('hid',x!==t.dataset.t));return}
+  if(t.dataset.t){document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b===t));['c','r','s0','s1'].forEach(x=>$('#p-'+x).classList.toggle('hid',x!==t.dataset.t));return}
   const a=t.dataset.a;
   if(a==='pick')$('#fi').click();
   else if(a==='cf'){FILES={R:null,P:null};msg('');render()}
@@ -204,8 +204,8 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-t],[data-a
   else if(a==='dis'){DIS.add(t.dataset.k);saveDis()}
   else if(a==='disr'){if(confirm(`Вернуть все скрытые предупреждения (${DIS.size})?`)){DIS.clear();saveDis()}}
   else if(a==='sv'){const DY=window._DY||{},n=Object.keys(DY).length;if(!n||window._WHY)return;
-    if(SUM[Object.keys(DY)[0]]&&!confirm(`За ${Object.keys(DY)[0]} уже есть данные в сводной. Перезаписать?`))return;
-    DB.save(DY).then(c=>{SUM=c;msg(`Сохранено в сводную: ${n} дн.`,'ok');render()}).catch(e=>msg('Не сохранилось: '+(e.message||e),'er'))}
+    const cp=CAMPS[CUR],i0=CUR;if((SUMS[cp.id]||{})[Object.keys(DY)[0]]&&!confirm(`В сводной ${cp.name} за ${Object.keys(DY)[0]} уже есть данные. Перезаписать?`))return;
+    DB.save(i0,DY).then(r=>{SUMS[cp.id]=r;msg(`Сохранено в сводную ${cp.name}: ${n} дн.`,'ok');render()}).catch(e=>msg('Не сохранилось: '+(e.message||e),'er'))}
   else if(a==='ipick')$('#fx').click();
   else if(a==='impadd'&&IMP){const n=IMP.fresh.length;ref.push(...IMP.fresh.map(x=>({o:x.o,c:x.c})));IMP=null;saveRef();msg(`Добавлено в справочник: ${n}`,'ok')}
   else if(a==='imprep'&&IMP){if(confirm(`Заменить весь справочник (${ref.length} записей) данными из файла (${IMP.uniq.length})?`)){ref=IMP.uniq.map(x=>({o:x.o,c:x.c}));IMP=null;saveRef();msg('Справочник заменён','ok')}}
@@ -215,7 +215,8 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-t],[data-a
   else if(a==='bk')backup();else if(a==='rs')$('#fr').click();else if(a==='rr')resetRef()
 });
 document.addEventListener('change',e=>{const t=e.target;
-  if(t.id==='sm'){SM=t.value;renderSum();return}
+  if(/^sm\d$/.test(t.id)){const i=+t.id.slice(2);SMS[CAMPS[i].id]=t.value;renderSum(i);return}
+  if(t.id==='camp'){CUR=+t.value;try{localStorage.setItem('camp',CUR)}catch(e){}render();return}
   if(t.dataset.f){const x=ref[+t.dataset.i];if(x){x[t.dataset.f]=t.value.trim();saveRef()}}
   else if(t.id==='fi'){load([...t.files]);t.value=''}
   else if(t.id==='fx'){if(t.files[0])impRef(t.files[0]);t.value=''}
@@ -224,4 +225,6 @@ $('#q').addEventListener('input',render);
 const dz=$('#dz');['dragover','dragenter'].forEach(v=>dz.addEventListener(v,e=>{e.preventDefault();dz.classList.add('dr')}));
 ['dragleave','drop'].forEach(v=>dz.addEventListener(v,e=>{e.preventDefault();dz.classList.remove('dr')}));
 dz.addEventListener('drop',e=>load([...e.dataTransfer.files]));
+try{CUR=Math.min(+localStorage.getItem('camp')||0,CAMPS.length-1)}catch(e){}
+$('#camp').innerHTML=CAMPS.map((c,i)=>`<option value="${i}">${c.name}</option>`).join('');$('#camp').value=CUR;
 render();init();
