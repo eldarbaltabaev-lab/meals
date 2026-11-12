@@ -7,17 +7,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&family=Noto+Serif:wght@600;700&family=Shippori+Mincho:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head><body>
-<div id="pg" aria-hidden="true"></div><canvas id="sk" aria-hidden="true"></canvas>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rough"><feTurbulence type="fractalNoise" baseFrequency=".045" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3.2"/></filter></svg>
 <div id="lg" class="lg"><form class="lgc" id="lgf"><div class="hanko" aria-hidden="true">食</div><h2>入口 <small>Вход</small></h2><p class="mu">Доступ только для своих</p>
 <input type="email" id="le" autocomplete="username" placeholder="Email" required><input type="password" id="lp" autocomplete="current-password" placeholder="Пароль" required>
 <button class="bt pr" id="lb" type="submit">入 Войти</button><div id="lerr" class="er" role="alert"></div></form></div>
 <header class="hd">
-  <div class="sky" aria-hidden="true"><i class="sun"></i><i class="mist"></i>
-    <svg class="fj" viewBox="0 0 1200 150" preserveAspectRatio="xMidYMax slice"><path class="m1" d="M0 150V100Q120 66 240 96T470 86Q560 70 600 96T820 80Q950 56 1060 92T1200 86V150Z"/><path class="fu" d="M300 150C420 132 520 72 572 38Q600 22 628 38C680 72 780 132 900 150Z"/><path class="sn" d="M572 38Q600 22 628 38C640 46 650 54 658 62L640 55L626 68L610 53L594 68L578 55L562 62C552 54 562 46 572 38Z"/><path class="m2" d="M0 150V126Q150 104 300 124T600 121T900 119T1200 123V150Z"/></svg>
-    <i class="lt" style="left:56%"></i><i class="lt l2" style="left:63%"></i>
-    <div class="wv w2"></div><div class="wv"></div></div>
-  <span class="tate" lang="ja" aria-hidden="true">食事日報</span>
+  <i class="hm" aria-hidden="true"></i>
   <div class="hd-in">
     <div class="brand"><span class="hanko" aria-hidden="true">食</span>
       <div><h1>Проверка отчётов по питанию</h1><p class="jp" lang="ja">食事日報チェック</p></div></div>
@@ -59,10 +53,8 @@
 <footer class="ft"><b aria-hidden="true">終</b>食事日報チェック</footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="app.js"></script>
-<script src="fx.js"></script>
 <script type="module">
 const V="13.3.0",U=n=>`https://www.gstatic.com/firebasejs/${V}/firebase-${n}.js`,$=s=>document.querySelector(s),lg=$('#lg'),er=$('#lerr');
-lg.prepend($('.hd .sky').cloneNode(true));
 try{
 const [{initializeApp},A,S]=await Promise.all([import(U('app')),import(U('auth')),import(U('firestore'))]);
 const app=initializeApp({apiKey:"AIzaSyBq_luXBBw9WlsVB0AJAl4gfzkmubRQNXM",authDomain:"meals-b7377.firebaseapp.com",projectId:"meals-b7377",storageBucket:"meals-b7377.firebasestorage.app",messagingSenderId:"648306044693",appId:"1:648306044693:web:c74e759df279c05a4a031c"}),auth=A.getAuth(app),db=S.getFirestore(app);

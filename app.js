@@ -185,7 +185,7 @@ function renderSum(){const el=$('#sumpg');if(!el)return;const ds=Object.keys(SUM
   key=i=>`${SM}-${String(i).padStart(2,'0')}`,sun=i=>new Date(Y,M-1,i).getDay()===0,I=[...Array(nd)].map((_,i)=>i+1),
   blk=(ttl,get,cls)=>{const G=I.map(i=>get(key(i))),tot=g=>g?RW.reduce((a,[k])=>a+g[k],0):null;
    return`<section class="pvb ${cls}"><h3>${ttl} ${mn} ${Y} ${CAMP}</h3><div class="sc"><table class="pv"><tr class="dh"><th>Date</th>${I.map(i=>`<th class="${sun(i)?'su':''}">${i}</th>`).join('')}<th class="n">Σ</th></tr>
-   ${RW.map(([k,n])=>`<tr><th class="rl">${n}</th>${G.map((g,j)=>`<td class="${k==='d'&&sun(j+1)?'sun':''}">${g?g[k]:''}</td>`).join('')}<td class="n sm">${G.reduce((a,g)=>a+(g?g[k]:0),0)}</td></tr>`).join('')}
+   ${RW.map(([k,n])=>`<tr><th class="rl">${n}</th>${G.map((g,j)=>`<td class="${k==='d'&&sun(j+1)?'sd':''}">${g?g[k]:''}</td>`).join('')}<td class="n sm">${G.reduce((a,g)=>a+(g?g[k]:0),0)}</td></tr>`).join('')}
    <tr class="tr"><th class="rl">TOTAL</th>${G.map(g=>`<td>${g?tot(g):0}</td>`).join('')}<td class="n sm">${G.reduce((a,g)=>a+(g?tot(g):0),0)}</td></tr></table></div></section>`};
   el.innerHTML=blk('Contractors',d=>SUM[d]&&SUM[d].con,'c1')+blk('KAL',d=>SUM[d]&&SUM[d].kal,'c2')+blk('KAL + Contractors',d=>SUM[d]&&RW.reduce((o,[k])=>(o[k]=SUM[d].kal[k]+SUM[d].con[k],o),{}),'c3')}
 
