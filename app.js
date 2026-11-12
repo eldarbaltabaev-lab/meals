@@ -17,6 +17,13 @@ const IDB={db:null,
  del(k){return new Promise((ok,no)=>{const t=this.db.transaction('kv','readwrite');t.objectStore('kv').delete(k);t.oncomplete=ok;t.onerror=()=>no(t.error)})}};
 /* Хранилище сводной. Сюда подключается Firebase: достаточно заменить load/save */
 const DB={async save(i,days){const c=CAMPS[i];if(!window.FB||!FB.user)throw new Error('нужно войти в систему');await FB.saveDays(c.col,days);return{...(SUMS[c.id]||{}),...days}}};
+/* доступ к городкам: ids = ['perm'] / ['kerege'] / null (все) */
+window.setAccess=ids=>{const ok=i=>!ids||ids.includes(CAMPS[i].id);
+  CAMPS.forEach((_,i)=>document.querySelector(`[data-t="s${i}"]`).classList.toggle('hid',!ok(i)));
+  $('#camp').innerHTML=CAMPS.map((c,i)=>ok(i)?`<option value="${i}">${c.name}</option>`:'').join('');
+  if(!ok(CUR))CUR=CAMPS.findIndex((_,i)=>ok(i));
+  $('#camp').value=CUR;$('#camp').closest('.bar').classList.toggle('hid',!!ids&&ids.length<2);
+  document.querySelector('[data-t="c"]').click();render()};
 window.onFB=(days,dis)=>{SUMS=days||{};SMS={};DIS=new Set(dis||[]);render()};
 const reidx=()=>{rk=new Set(ref.map(x=>kk(x.o,x.c)));RO=new Map();RC=new Map();
   ref.forEach(x=>{(RO.get(x.o)||RO.set(x.o,[]).get(x.o)).push(x.c);(RC.get(x.c)||RC.set(x.c,[]).get(x.c)).push(x.o)})};

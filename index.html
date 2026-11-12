@@ -65,7 +65,9 @@ const FB=window.FB={user:null,
  async saveDis(list){await S.setDoc(S.doc(db,'users',auth.currentUser.uid,'settings','dis'),{list})},
  async pull(){const uid=auth.currentUser.uid,days={};for(const c of CAMPS){days[c.id]={};(await S.getDocs(S.collection(db,'users',uid,c.col))).forEach(d=>{const v=d.data();days[c.id][d.id]={kal:v.kal,con:v.con}})}
   const ds=await S.getDoc(S.doc(db,'users',uid,'settings','dis'));if(auth.currentUser&&auth.currentUser.uid===uid)window.onFB&&onFB(days,ds.exists()?ds.data().list:[])}};
-A.onAuthStateChanged(auth,async u=>{FB.user=u;lg.classList.toggle('hid',!!u);$('#lo').classList.toggle('hid',!u);window.onFB&&onFB({},[]);
+/* ВПИШИТЕ email аккаунтов: какой аккаунт к какому городку относится */
+const ACCESS={'permanent@example.com':['perm'],'kerege@example.com':['kerege']};
+A.onAuthStateChanged(auth,async u=>{FB.user=u;window.setAccess&&setAccess(u&&ACCESS[(u.email||'').toLowerCase()]||null);lg.classList.toggle('hid',!!u);$('#lo').classList.toggle('hid',!u);window.onFB&&onFB({},[]);
  if(u)try{await FB.pull()}catch(e){msg(e.code==='permission-denied'?'Нет доступа к базе: обнови правила Firestore (доступ к users/{uid})':'Не удалось загрузить сводную: '+(e.message||e),'er')}});
 $('#lgf').addEventListener('submit',async e=>{e.preventDefault();er.textContent='';$('#lb').disabled=true;
  try{await A.signInWithEmailAndPassword(auth,$('#le').value.trim(),$('#lp').value);$('#lp').value=''}
