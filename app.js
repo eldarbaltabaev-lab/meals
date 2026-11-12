@@ -126,8 +126,8 @@ function render(){
   /* посуточные итоги по блокам KAL / Contractors */
   const DY={},zb=()=>({b:0,t:0,l:0,d:0,p:0}),bl=(dt,o)=>{const D=DY[dt]||(DY[dt]={kal:zb(),con:zb()});return KAL(o)?D.kal:D.con};
   fs.forEach(x=>x.persons.forEach(p=>{if(!p.dt)return;const B=bl(p.dt,p.o);B.b+=p.b;B.l+=p.l;B.d+=p.d+(p.s||0);B.p+=p.p||0;if(R===x||x.kind==='R')B.t+=p.t||0}));
-  Object.values(tk).forEach(x=>{if(x.d&&!x.src.has('Record'))bl(x.d,x.o).t+=1});
-  const OKS=Object.keys(DY),ER=gl.length+cf.length+dp.length+ni,why=!R||!P?'Нужны оба файла: Record и Report':OKS.length!==1?'В файлах должна быть ровно одна дата (сейчас: '+OKS.length+')':R.dates.join()!==P.dates.join()?'Даты Record и Report разные':ER?`Сначала исправь замечания: ${ER}`:'';
+  const OKS=Object.keys(DY),ER=gl.length+cf.length+dp.length+ni,CH=[['b','завтрак'],['t','takeaway'],['l','обед'],['d','ужин'],['p','packed']],ds=k=>OKS.reduce((a,x)=>a+DY[x].kal[k]+DY[x].con[k],0),gs=k=>[R,P].reduce((a,x)=>a+(x?x.gt[k]+(k==='d'?x.gt.s||0:0):0),0),BD=CH.filter(([k])=>ds(k)!==gs(k)),
+  why=!R||!P?'Нужны оба файла: Record и Report':OKS.length!==1?'В файлах должна быть ровно одна дата (сейчас: '+OKS.length+')':R.dates.join()!==P.dates.join()?'Даты Record и Report разные':BD.length?'Итоги по блокам не сходятся с Grand Total: '+BD.map(([k,n])=>`${n} ${ds(k)} вместо ${gs(k)}`).join(', '):ER?`Сначала исправь замечания: ${ER}`:'';
   window._DY=DY;window._ER=ER;window._WHY=why;
   /* ---------- итоги: Grand Total Record / Report / всего ---------- */
   const tot=o=>o.n||F.reduce((a,k)=>a+o[k],0),AK=new Set();fs.forEach(x=>x.act.forEach(([k])=>AK.add(k)));
