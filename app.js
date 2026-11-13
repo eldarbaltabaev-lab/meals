@@ -56,12 +56,16 @@ function diag(o,c){
 }
 
 /* ---------- разбор Excel ---------- */
-const iso=v=>{if(v instanceof Date){const x=new Date(v.getTime()+432e5);return`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`}const m=String(v||'').match(/(\d{2})[./](\d{2})[./](\d{4})/);return m?`${m[3]}-${m[2]}-${m[1]}`:null};
+const p2=n=>String(n).padStart(2,'0');
+const iso=v=>{if(v instanceof Date){const x=new Date(v.getTime()+432e5);return`${x.getFullYear()}-${p2(x.getMonth()+1)}-${p2(x.getDate())}`}
+  if(typeof v==='number'&&v>30000&&v<80000){const x=new Date(Math.round((v-25569)*864e5));return`${x.getUTCFullYear()}-${p2(x.getUTCMonth()+1)}-${p2(x.getUTCDate())}`}
+  const s=String(v||''),a=s.match(/(\d{4})[-./](\d{1,2})[-./](\d{1,2})/);if(a)return`${a[1]}-${p2(a[2])}-${p2(a[3])}`;
+  const m=s.match(/(\d{1,2})[-./](\d{1,2})[-./](\d{4})/);return m?`${m[3]}-${p2(m[2])}-${p2(m[1])}`:null};
 async function parse(f){
   const wb=XLSX.read(await f.arrayBuffer(),{type:'array',cellDates:true}),sh=n=>XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:null}),A=sh(wb.SheetNames[0]);
   const h=A.findIndex(r=>r.some(c=>/cost ?code/i.test(c||'')));if(h<0)throw new Error('не найден заголовок таблицы (Cost Code)');
   const H=A[h].map(c=>String(c||'').toLowerCase()),rep=H.some(c=>/full name/.test(c)),ix=re=>H.findIndex(c=>re.test(c));
-  const io=ix(/organization/),ic=ix(/cost ?code/),id=ix(/^date/),inm=Math.max(0,ix(/person name|full name/));
+  const io=ix(/organization/),ic=ix(/cost ?code/),id=(i=>i>=0?i:ix(/date|дата/))(ix(/^(date|дата)/)),inm=Math.max(0,ix(/person name|full name/));
   const X={b:rep?ix(/breakfast/):H.findIndex(c=>/breakfast/.test(c)&&!/take/.test(c)),t:rep?-1:ix(/take/),l:ix(/lunch/),d:H.findIndex(c=>/dinner|ужин/.test(c)&&!/st[ea]+ke?|стейк/.test(c)),p:ix(/packed/),s:ix(/st[ea]+ke?|стейк/),n:ix(/nb meals/)};
   const num=(r,k)=>X[k]<0?0:(Number(r[X[k]])||0),g=(r,k)=>k==='n'||!rep?num(r,k):(X[k]<0?0:(r[X[k]]!=null&&r[X[k]]!==''?1:0));
   const zr=()=>({b:0,t:0,l:0,d:0,p:0,s:0,n:0}),persons=[],P={},CT={},bp=[],dates=new Set();let GT=null;
@@ -72,6 +76,7 @@ async function parse(f){
     persons.push({nm,k:nk(nm),o:String(o),c:String(r[ic]??''),...v,dt:d||''});
     const Po=P[os]||(P[os]=zr());COLS.forEach(([k])=>Po[k]+=v[k]);
     const cnt=F.reduce((a,k)=>a+v[k],0);if(X.n>=0&&v.n!==cnt)bp.push(`${nm} («${os}»): Nb Meals ${v.n}, по колонкам ${cnt}`)}
+  let dfn=false;if(!dates.size){const fd=iso(f.name);if(fd){dates.add(fd);persons.forEach(p=>p.dt=fd);dfn=true}}
   const iss=[],act=COLS.filter(([k])=>X[k]>=0),cmp=(lab,a,b,la,lb)=>{const d=act.filter(([k])=>a[k]!==b[k]);if(d.length)iss.push(`${lab}: `+d.map(([k,n])=>`${n} — ${la} ${a[k]}, ${lb} ${b[k]}`).join('; '))};
   const sm=O=>Object.values(O).reduce((a,x)=>{COLS.forEach(([k])=>a[k]+=x[k]);return a},zr());
   if(!Object.keys(CT).length)iss.push('В файле нет строк Total по компаниям');
@@ -82,7 +87,7 @@ async function parse(f){
   const tk=[],ts=rep&&wb.SheetNames.find(n=>/take ?away/i.test(n));
   if(ts)for(const r of sh(ts)){const n=String(r[0]??'').trim();if(n&&!/name|имя/i.test(n))tk.push({nm:n,o:String(r[1]??''),d:dates.size===1?[...dates][0]:''})}
   const tb=`<div class="sc"><table><tr><th></th>${act.map(([,n])=>`<th class="n">${n}</th>`).join('')}</tr>${[['Σ людей',SP],['Σ Total компаний',SC],['Grand Total в файле',GT]].filter(x=>x[1]).map(([l,O])=>`<tr><td>${l}</td>${act.map(([k])=>`<td class="n ${GT&&O[k]!==GT[k]?'er':''}">${O[k]}</td>`).join('')}</tr>`).join('')}</table></div>`;
-  return{kind:rep?'P':'R',name:f.name,persons,tk,iss,tb,dates:[...dates].sort(),gt:GT||SP,hasGT:!!GT,act}
+  return{kind:rep?'P':'R',name:f.name,persons,tk,iss,tb,dates:[...dates].sort(),dfn,gt:GT||SP,hasGT:!!GT,act}
 }
 async function load(files){
   if(!ready)return msg('Хранилище ещё не готово','er');const er=[];
@@ -101,7 +106,7 @@ function render(){
   $('#ref').innerHTML=`<table><tr><th>Компания</th><th>Кост-код</th><th></th></tr>${RL.map(x=>`<tr><td><input type="text" value="${esc(x.o)}" data-i="${x.i}" data-f="o" aria-label="Компания"></td><td><input type="text" value="${esc(x.c)}" data-i="${x.i}" data-f="c" aria-label="Кост-код"></td><td class="n"><button class="bt sm" data-a="del" data-i="${x.i}" aria-label="Удалить">✕</button></td></tr>`).join('')}</table>`;
   CAMPS.forEach((_,i)=>renderSum(i));renderImp();
   if(!fs.length){$('#res').innerHTML='';return}
-  let h=`<div class="files">${fs.map(x=>`<div class="fc">${tag(x.kind)}<span class="fn">${esc(x.name)}</span><span class="fm">${x.dates.join(', ')||'дата не найдена'}</span><span class="fm">людей: <b>${x.persons.length}</b></span></div>`).join('')}</div>`;
+  let h=`<div class="files">${fs.map(x=>`<div class="fc">${tag(x.kind)}<span class="fn">${esc(x.name)}</span><span class="fm">${x.dates.join(', ')||'дата не найдена'}${x.dfn?' (из имени файла)':''}</span><span class="fm">людей: <b>${x.persons.length}</b></span></div>`).join('')}</div>`;
   if(R&&P&&R.dates.join()!==P.dates.join())h+=`<div class="note wr">Даты в файлах разные: Record ${R.dates.join(', ')||'—'}, Report ${P.dates.join(', ')||'—'}</div>`;
   if(!R)h+='<div class="note">Record не загружен: takeaway берётся только с листа Take away из Report.</div>';
   if(!P)h+='<div class="note">Report не загружен: завтраки в Report не проверены.</div>';
@@ -134,7 +139,7 @@ function render(){
   const DY={},zb=()=>({b:0,t:0,l:0,d:0,p:0}),bl=(dt,o)=>{const D=DY[dt]||(DY[dt]={kal:zb(),con:zb()});return KAL(o)?D.kal:D.con};
   fs.forEach(x=>x.persons.forEach(p=>{if(!p.dt)return;const B=bl(p.dt,p.o);B.b+=p.b;B.l+=p.l;B.d+=p.d+(p.s||0);B.p+=p.p||0;if(R===x||x.kind==='R')B.t+=p.t||0}));
   const OKS=Object.keys(DY),ER=gl.length+cf.length+dp.length+ni,CH=[['b','завтрак'],['t','takeaway'],['l','обед'],['d','ужин'],['p','packed']],ds=k=>OKS.reduce((a,x)=>a+DY[x].kal[k]+DY[x].con[k],0),gs=k=>[R,P].reduce((a,x)=>a+(x?x.gt[k]+(k==='d'?x.gt.s||0:0):0),0),BD=CH.filter(([k])=>ds(k)!==gs(k)),
-  why=!R||!P?'Нужны оба файла: Record и Report':OKS.length!==1?'В файлах должна быть ровно одна дата (сейчас: '+OKS.length+')':R.dates.join()!==P.dates.join()?'Даты Record и Report разные':BD.length?'Итоги по блокам не сходятся с Grand Total: '+BD.map(([k,n])=>`${n} ${ds(k)} вместо ${gs(k)}`).join(', '):ER?`Сначала исправь замечания: ${ER}`:'';
+  why=!R&&!P?'Загрузите Record или Report':OKS.length!==1?'В файлах должна быть ровно одна дата (сейчас: '+OKS.length+')':R&&P&&R.dates.join()!==P.dates.join()?'Даты Record и Report разные':BD.length?'Итоги по блокам не сходятся с Grand Total: '+BD.map(([k,n])=>`${n} ${ds(k)} вместо ${gs(k)}`).join(', '):ER?`Сначала исправь замечания: ${ER}`:'';
   window._DY=DY;window._ER=ER;window._WHY=why;
   /* ---------- итоги: Grand Total Record / Report / всего ---------- */
   const tot=o=>o.n||F.reduce((a,k)=>a+o[k],0),AK=new Set();fs.forEach(x=>x.act.forEach(([k])=>AK.add(k)));
