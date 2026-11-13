@@ -4,7 +4,7 @@
 <title>Проверка отчётов по питанию</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&family=Noto+Serif:wght@600;700&family=Shippori+Mincho:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head><body>
 <div id="lg" class="lg"><form class="lgc" id="lgf"><div class="hanko" aria-hidden="true">食</div><h2>入口 <small>Вход</small></h2><p class="mu">Доступ только для своих</p>
@@ -15,9 +15,9 @@
   <div class="hd-in">
     <div class="brand"><span class="hanko" aria-hidden="true">食</span>
       <div><h1>Проверка отчётов по питанию</h1><p class="jp" lang="ja">食事日報チェック</p></div></div>
-    <div class="hb"><button id="lo" class="bt ghost hid" title="Выйти" aria-label="Выйти">⏻</button><button class="bt ghost" data-a="th" title="Сменить тему: день или ночь" aria-label="Сменить тему">◐</button></div>
+    <div class="hb"><button id="lo" class="bt ghost hid" title="Выйти" aria-label="Выйти">⏻</button><button class="bt ghost" data-a="sk" title="Лепестки сакуры: вкл/выкл" aria-label="Лепестки сакуры">✿</button><button class="bt ghost" data-a="th" title="Сменить тему: день или ночь" aria-label="Сменить тему">◐</button></div>
   </div>
-  <nav class="tabs" id="tabs" aria-label="Разделы"><button data-t="c" class="on"><span class="k" lang="ja">検</span>Проверка</button><button data-t="r"><span class="k" lang="ja">帳</span>Справочник</button><button data-t="s0"><span class="k" lang="ja">表</span>Сводная Permanent</button><button data-t="s1"><span class="k" lang="ja">表</span>Сводная Kerege</button></nav>
+  <nav class="tabs" id="tabs" aria-label="Разделы"><button data-t="c" class="on"><span class="k" lang="ja">検</span>Проверка</button><button data-t="r"><span class="k" lang="ja">帳</span>Справочник</button><button data-t="s0"><span class="k" lang="ja">表</span>Сводная Permanent</button><button data-t="s1"><span class="k" lang="ja">表</span>Сводная Kerege</button><button data-t="h"><span class="k" lang="ja">助</span>Справка</button></nav>
 </header>
 <main>
 <div id="msg" role="status"></div>
@@ -51,6 +51,20 @@
 <div class="card"><h2>Копия справочника</h2><p class="mu">Справочник хранится в этом браузере. Скачайте копию, чтобы перенести его на другой компьютер или не потерять.</p>
 <div class="bar"><button class="bt" data-a="bk">Скачать копию</button><button class="bt" data-a="rs">Восстановить из копии</button><button class="bt" data-a="rr">Сбросить к исходному</button><input type="file" id="fr" accept=".json" class="hid"></div></div>
 </section>
+<section id="p-h" class="hid help">
+<div class="card"><h2>Как пользоваться <span class="jp2" lang="ja">使い方</span></h2><p class="mu">Приложение проверяет ежедневные отчёты по питанию и складывает итоги дня в сводную таблицу. Весь путь — четыре шага.</p></div>
+<div class="hs"><b class="no">1</b><div><h3>Загрузите файлы</h3><p>На вкладке «Проверка» перетащите в рамку файлы <b>Meals Sheet Record</b> и <b>Meals report by company</b> (.xlsx или .xls) или нажмите «Выбрать файлы». Какой это файл, сайт определяет сам. Новый файл того же типа заменяет прежний. Файлы читаются в браузере и никуда не отправляются.</p><p>Можно загрузить <b>только Record</b> или только Report: когда второго файла нет, проверки по нему просто пропускаются.</p></div></div>
+<div class="hs"><b class="no">2</b><div><h3>Посмотрите результат проверки</h3><p>Под файлами появятся плитки, по одной на проверку. Печать <b>合</b> значит «в порядке», <b>否</b> значит «есть замечания». Нажмите на плитку, чтобы перейти к подробностям.</p><ul><li><b>Кост-коды и компании.</b> Название и кост-код сверяются со справочником символ в символ. Красным подсвечено, чем отличается строка. Если пара верная, нажмите «Добавить в справочник».</li><li><b>Takeaway и завтрак.</b> У тех, у кого есть takeaway, завтрака быть не должно.</li><li><b>Больше одного приёма пищи.</b> Record и Report складываются, стейк считается ужином. Если это тёзки, нажмите «Устранено».</li><li><b>Итоги внутри файлов.</b> Сумма по людям должна совпадать с Total по компаниям и с Grand Total.</li></ul></div></div>
+<div class="hs"><b class="no">3</b><div><h3>Сохраните день в сводную</h3><p>Внизу страницы блок «Итоги» с кнопкой <b>«Сохранить в сводную»</b>. Она включается, когда в файлах ровно одна дата, замечаний нет и итоги по блокам сходятся с Grand Total. Если что-то мешает, причина написана рядом с кнопкой.</p><p>Дата берётся из столбца Date или «Дата». Если там её нет, сайт берёт дату из имени файла и помечает это на карточке файла.</p><p><b>Важно:</b> сохранение перезаписывает день целиком. Когда у вас есть оба файла, загружайте оба сразу, иначе данные второго файла затрутся.</p></div></div>
+<div class="hs"><b class="no">4</b><div><h3>Откройте сводную</h3><p>На вкладке сводной выберите месяц. Таблиц три: <b>Contractors</b>, <b>KAL</b> (компании KAZ Minerals) и общая <b>KAL + Contractors</b>. Воскресенья подсвечены, справа сумма по строке, внизу строка TOTAL.</p></div></div>
+<div class="card"><h2>Справочник компаний</h2><p>Вкладка «Справочник» хранит список «компания — кост-код». Добавлять можно вручную или импортом из Excel: в первом столбце компания, во втором кост-код. Перед добавлением сайт покажет, что изменится.</p><p class="mu">Справочник хранится в этом браузере. Периодически нажимайте «Скачать копию», чтобы не потерять его и перенести на другой компьютер.</p></div>
+<div class="card"><h2>Аккаунты и городки</h2><p>Каждый аккаунт привязан к своему городку (Permanent или Kerege) и видит только свои данные. Чужая сводка недоступна.</p></div>
+<div class="card"><h2>Частые вопросы</h2>
+<details><summary>Кнопка «Сохранить в сводную» неактивна</summary><p>Прочитайте причину рядом с кнопкой. Обычно это не загружены файлы, в файлах больше одной даты, остались замечания в проверках или итоги не сходятся с Grand Total.</p></details>
+<details><summary>Пишет «дата не найдена»</summary><p>Сайт не нашёл дату ни в столбце Date, ни в имени файла. Добавьте дату в имя файла в виде 02.11.2026 и загрузите его заново.</p></details>
+<details><summary>Разные люди с одинаковым именем попали в «Больше одного приёма»</summary><p>Нажмите «Устранено» у этой строки. Сайт запомнит, что это разные люди. Вернуть все скрытые можно кнопкой «Вернуть все».</p></details>
+<details><summary>Как поменять тему или отключить лепестки</summary><p>В правом верхнем углу кнопка ◐ переключает день и ночь, а ✿ включает и выключает лепестки сакуры.</p></details></div>
+</section>
 </main>
 <footer class="ft"><b aria-hidden="true">終</b>食事日報チェック</footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -66,7 +80,7 @@ const FB=window.FB={user:null,
  async pull(){const uid=auth.currentUser.uid,days={};for(const c of CAMPS){days[c.id]={};(await S.getDocs(S.collection(db,'users',uid,c.col))).forEach(d=>{const v=d.data();days[c.id][d.id]={kal:v.kal,con:v.con}})}
   const ds=await S.getDoc(S.doc(db,'users',uid,'settings','dis'));if(auth.currentUser&&auth.currentUser.uid===uid)window.onFB&&onFB(days,ds.exists()?ds.data().list:[])}};
 /* ВПИШИТЕ email аккаунтов: какой аккаунт к какому городку относится */
-const ACCESS={'permanent@gmail.com':['perm'],'kerege@gmail.com':['kerege']};
+const ACCESS={'permanent@example.com':['perm'],'kerege@example.com':['kerege']};
 A.onAuthStateChanged(auth,async u=>{FB.user=u;window.setAccess&&setAccess(u&&ACCESS[(u.email||'').toLowerCase()]||null);lg.classList.toggle('hid',!!u);$('#lo').classList.toggle('hid',!u);window.onFB&&onFB({},[]);
  if(u)try{await FB.pull()}catch(e){msg(e.code==='permission-denied'?'Нет доступа к базе: обнови правила Firestore (доступ к users/{uid})':'Не удалось загрузить сводную: '+(e.message||e),'er')}});
 $('#lgf').addEventListener('submit',async e=>{e.preventDefault();er.textContent='';$('#lb').disabled=true;

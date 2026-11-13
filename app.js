@@ -99,13 +99,19 @@ async function load(files){
 const LBL={R:'Record',P:'Report'},SEALS={ok:'合',er:'否'};
 const tag=k=>`<span class="tag ${k}">${LBL[k]}</span>`;
 const ck=(id,st,title,sub,n,unit,body)=>`<section class="ck ${st}" id="${id}"><header><div class="ct"><h2>${title}</h2><p>${sub}</p></div>${st==='er'?`<span class="cn"><b>${n}</b>${unit}</span>`:'<span class="cn ok">в порядке</span>'}</header>${body||''}</section>`;
+let SIG='';
+const fx=(fs,ER)=>{const s=fs.map(x=>x.name+x.persons.length).join('|')+'|'+ER,ch=s!==SIG;SIG=s;$('#res').classList.toggle('stamp',ch);if(!ch)return;
+  document.querySelectorAll('.sb b[data-n]').forEach(e=>{const n=+e.dataset.n;if(!n)return;const t0=performance.now(),f=t=>{const k=Math.min(1,(t-t0)/900);e.textContent=Math.round(n*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(f)};requestAnimationFrame(f)})};
+(()=>{const s=document.createElement('div');s.className='sky';s.setAttribute('aria-hidden','true');
+  for(let i=0;i<14;i++){const p=document.createElement('i');p.style.cssText=`left:${(Math.random()*100)|0}%;--dx:${(Math.random()*180-50)|0}px;--s:${(.7+Math.random()*.8).toFixed(2)};animation-duration:${(9+Math.random()*10).toFixed(1)}s;animation-delay:-${(Math.random()*18).toFixed(1)}s`;s.appendChild(p)}
+  document.body.appendChild(s);try{if(localStorage.getItem('sky')==='0')document.body.classList.add('nosky')}catch(e){}})();
 function render(){
   const R=FILES.R,P=FILES.P,fs=[R,P].filter(Boolean);
   $('#rc').textContent=`Записей: ${ref.length}`;
   const qq=nk($('#q').value),RL=ref.map((x,i)=>({...x,i})).filter(x=>!qq||nk(x.o+' '+x.c).includes(qq));
   $('#ref').innerHTML=`<table><tr><th>Компания</th><th>Кост-код</th><th></th></tr>${RL.map(x=>`<tr><td><input type="text" value="${esc(x.o)}" data-i="${x.i}" data-f="o" aria-label="Компания"></td><td><input type="text" value="${esc(x.c)}" data-i="${x.i}" data-f="c" aria-label="Кост-код"></td><td class="n"><button class="bt sm" data-a="del" data-i="${x.i}" aria-label="Удалить">✕</button></td></tr>`).join('')}</table>`;
   CAMPS.forEach((_,i)=>renderSum(i));renderImp();
-  if(!fs.length){$('#res').innerHTML='';return}
+  if(!fs.length){$('#res').innerHTML='';SIG='';return}
   let h=`<div class="files">${fs.map(x=>`<div class="fc">${tag(x.kind)}<span class="fn">${esc(x.name)}</span><span class="fm">${x.dates.join(', ')||'дата не найдена'}${x.dfn?' (из имени файла)':''}</span><span class="fm">людей: <b>${x.persons.length}</b></span></div>`).join('')}</div>`;
   if(R&&P&&R.dates.join()!==P.dates.join())h+=`<div class="note wr">Даты в файлах разные: Record ${R.dates.join(', ')||'—'}, Report ${P.dates.join(', ')||'—'}</div>`;
   if(!R)h+='<div class="note">Record не загружен: takeaway берётся только с листа Take away из Report.</div>';
@@ -150,7 +156,7 @@ function render(){
     <div class="sbs">${big('Record','記録',T.R,'r')}<span class="pl">＋</span>${big('Report','報告',T.P,'p')}<span class="pl">＝</span>${big('Всего','合計',TT,'tt')}</div>
     <div class="sc"><table><tr><th></th>${cl.map(([,n])=>`<th class="n">${n}</th>`).join('')}<th class="n">Всего приёмов</th></tr>${row('Record',R&&(k=>gv(R,k)),'r')}${row('Report',P&&(k=>gv(P,k)),'p')}${row('Всего',k=>gv(R,k)+gv(P,k),'tt')}</table></div>
     ${OKS.length?`<div class="bar"><button class="bt pr" data-a="sv" ${why?'disabled':''}>保存 Сохранить в сводную ${CAMPS[CUR].name} (${OKS[0]})</button><span class="${why?'wr':'ok'}">${why||'Всё чисто, можно сохранять'}</span></div>`:''}${fs.filter(x=>!x.hasGT).map(x=>`<div class="note wr">В ${LBL[x.kind]} нет строки Grand Total, взята сумма по людям</div>`).join('')}${!R||!P?`<div class="note">Загружен только ${R?'Record':'Report'}: «Всего» равно его итогу</div>`:''}</section>`;
-  $('#res').innerHTML=h+`<div class="tiles">${tl}</div>`+cards.map(c=>ck(c[0],c[1],c[2],c[3],c[4],c[5],c[6])).join('')+sumry
+  $('#res').innerHTML=h+`<div class="tiles">${tl}</div>`+cards.map(c=>ck(c[0],c[1],c[2],c[3],c[4],c[5],c[6])).join('')+sumry;fx(fs,ER)
 }
 
 /* ---------- копия / сброс справочника ---------- */
@@ -204,9 +210,10 @@ function renderSum(i0){const c=CAMPS[i0],el=$('#sumpg'+i0);if(!el)return;const S
 /* ---------- события ---------- */
 document.addEventListener('click',e=>{const t=e.target.closest('[data-t],[data-a],[data-go]');if(!t)return;
   if(t.dataset.go){const el=document.getElementById(t.dataset.go);if(el)el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});return}
-  if(t.dataset.t){document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b===t));['c','r','s0','s1'].forEach(x=>$('#p-'+x).classList.toggle('hid',x!==t.dataset.t));return}
+  if(t.dataset.t){document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b===t));['c','r','s0','s1','h'].forEach(x=>$('#p-'+x).classList.toggle('hid',x!==t.dataset.t));return}
   const a=t.dataset.a;
   if(a==='pick')$('#fi').click();
+  else if(a==='sk'){const b=document.body.classList.toggle('nosky');try{localStorage.setItem('sky',b?'0':'1')}catch(e){}}
   else if(a==='cf'){FILES={R:null,P:null};msg('');render()}
   else if(a==='add'){const o=$('#no').value.trim(),c=$('#nc').value.trim();if(!o)return msg('Введите название компании','wr');
     if(rk.has(kk(o,c)))return msg('Такая пара уже есть в справочнике','wr');ref.push({o,c});saveRef();$('#no').value=$('#nc').value='';msg('Добавлено в справочник','ok')}
