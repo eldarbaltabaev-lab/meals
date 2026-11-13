@@ -102,9 +102,6 @@ const ck=(id,st,title,sub,n,unit,body)=>`<section class="ck ${st}" id="${id}"><h
 let SIG='';
 const fx=(fs,ER)=>{const s=fs.map(x=>x.name+x.persons.length).join('|')+'|'+ER,ch=s!==SIG;SIG=s;$('#res').classList.toggle('stamp',ch);if(!ch)return;
   document.querySelectorAll('.sb b[data-n]').forEach(e=>{const n=+e.dataset.n;if(!n)return;const t0=performance.now(),f=t=>{const k=Math.min(1,(t-t0)/900);e.textContent=Math.round(n*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(f)};requestAnimationFrame(f)})};
-(()=>{const s=document.createElement('div');s.className='sky';s.setAttribute('aria-hidden','true');
-  for(let i=0;i<14;i++){const p=document.createElement('i');p.style.cssText=`left:${(Math.random()*100)|0}%;--dx:${(Math.random()*180-50)|0}px;--s:${(.7+Math.random()*.8).toFixed(2)};animation-duration:${(9+Math.random()*10).toFixed(1)}s;animation-delay:-${(Math.random()*18).toFixed(1)}s`;s.appendChild(p)}
-  document.body.appendChild(s);try{if(localStorage.getItem('sky')==='0')document.body.classList.add('nosky')}catch(e){}})();
 function render(){
   const R=FILES.R,P=FILES.P,fs=[R,P].filter(Boolean);
   $('#rc').textContent=`Записей: ${ref.length}`;

@@ -69,6 +69,7 @@
 <footer class="ft"><b aria-hidden="true">終</b>食事日報チェック</footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="app.js"></script>
+<script src="effects.js"></script>
 <script type="module">
 const V="13.3.0",U=n=>`https://www.gstatic.com/firebasejs/${V}/firebase-${n}.js`,$=s=>document.querySelector(s),lg=$('#lg'),er=$('#lerr');
 try{
@@ -80,7 +81,7 @@ const FB=window.FB={user:null,
  async pull(){const uid=auth.currentUser.uid,days={};for(const c of CAMPS){days[c.id]={};(await S.getDocs(S.collection(db,'users',uid,c.col))).forEach(d=>{const v=d.data();days[c.id][d.id]={kal:v.kal,con:v.con}})}
   const ds=await S.getDoc(S.doc(db,'users',uid,'settings','dis'));if(auth.currentUser&&auth.currentUser.uid===uid)window.onFB&&onFB(days,ds.exists()?ds.data().list:[])}};
 /* ВПИШИТЕ email аккаунтов: какой аккаунт к какому городку относится */
-const ACCESS={'permanent@gmail.com':['perm'],'kerege@gmail.com':['kerege']};
+const ACCESS={'permanent@example.com':['perm'],'kerege@example.com':['kerege']};
 A.onAuthStateChanged(auth,async u=>{FB.user=u;window.setAccess&&setAccess(u&&ACCESS[(u.email||'').toLowerCase()]||null);lg.classList.toggle('hid',!!u);$('#lo').classList.toggle('hid',!u);window.onFB&&onFB({},[]);
  if(u)try{await FB.pull()}catch(e){msg(e.code==='permission-denied'?'Нет доступа к базе: обнови правила Firestore (доступ к users/{uid})':'Не удалось загрузить сводную: '+(e.message||e),'er')}});
 $('#lgf').addEventListener('submit',async e=>{e.preventDefault();er.textContent='';$('#lb').disabled=true;
