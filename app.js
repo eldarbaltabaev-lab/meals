@@ -152,7 +152,7 @@ function render(){
   const sumry=`<section class="sumry" id="sum"><header><h2>Итоги <span lang="ja">総括</span></h2><p>Grand Total из файлов: Record, Report и сумма обоих</p></header>
     <div class="sbs">${big('Record','記録',T.R,'r')}<span class="pl">＋</span>${big('Report','報告',T.P,'p')}<span class="pl">＝</span>${big('Всего','合計',TT,'tt')}</div>
     <div class="sc"><table><tr><th></th>${cl.map(([,n])=>`<th class="n">${n}</th>`).join('')}<th class="n">Всего приёмов</th></tr>${row('Record',R&&(k=>gv(R,k)),'r')}${row('Report',P&&(k=>gv(P,k)),'p')}${row('Всего',k=>gv(R,k)+gv(P,k),'tt')}</table></div>
-    ${OKS.length?`<div class="bar"><button class="bt pr" data-a="sv" ${why?'disabled':''}>Сохранить в сводную ${CAMPS[CUR].name} (${OKS[0]})</button><span class="${why?'wr':'ok'}">${why||'Всё чисто, можно сохранять'}</span></div>`:''}${fs.filter(x=>!x.hasGT).map(x=>`<div class="note wr">В ${LBL[x.kind]} нет строки Grand Total, взята сумма по людям</div>`).join('')}${!R||!P?`<div class="note">Загружен только ${R?'Record':'Report'}: «Всего» равно его итогу</div>`:''}</section>`;
+    ${OKS.length?`<div class="bar"><button class="bt pr" data-a="sv" ${why?'disabled':''}>保存 Сохранить в сводную ${CAMPS[CUR].name} (${OKS[0]})</button><span class="${why?'wr':'ok'}">${why||'Всё чисто, можно сохранять'}</span></div>`:''}${fs.filter(x=>!x.hasGT).map(x=>`<div class="note wr">В ${LBL[x.kind]} нет строки Grand Total, взята сумма по людям</div>`).join('')}${!R||!P?`<div class="note">Загружен только ${R?'Record':'Report'}: «Всего» равно его итогу</div>`:''}</section>`;
   $('#res').innerHTML=h+`<div class="tiles">${tl}</div>`+cards.map(c=>ck(c[0],c[1],c[2],c[3],c[4],c[5],c[6])).join('')+sumry;fx(fs,ER)
 }
 
